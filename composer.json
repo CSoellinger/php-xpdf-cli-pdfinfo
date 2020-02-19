@@ -1,0 +1,48 @@
+{
+    "name": "csoellinger/xpdf-cli-pdfinfo",
+    "description": "A little PHP wrapper around the Xpdf cli tool: pdfinfo.",
+    "type": "library",
+    "keywords": [
+        "PHP",
+        "PDF",
+        "Info",
+        "xpdf",
+        "pdfinfo"
+    ],
+    "license": "MIT",
+    "scripts": {
+        "analyze": "PHAN_ALLOW_XDEBUG=1 ./vendor/bin/phan --strict-type-checking --progress-bar --color",
+        "lint": "./vendor/bin/phpcs --colors --cache .",
+        "lint-fix": "./vendor/bin/phpcbf -p --parallel=2 .",
+        "php-cs": "./vendor/bin/php-cs-fixer fix --show-progress=dots --dry-run --config=./.php_cs -v",
+        "php-cs-fix": "./vendor/bin/php-cs-fixer fix --show-progress=dots --config=./.php_cs -v",
+        "phpunit": "./vendor/bin/phpunit --testdox tests"
+    },
+    "autoload": {
+        "psr-4" : {
+            "XpdfCliTools\\PdfInfo\\" : "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4" : {
+            "Tests\\XpdfCliTools\\PdfInfo\\" : "tests/"
+        }
+    },
+    "require": {
+        "php": ">=7.0",
+        "ext-soap": "*",
+        "insign/get-os": "^1.0",
+        "symfony/process": "^5.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "2.*",
+        "phan/phan": "^2.4",
+        "phpmd/phpmd": "^2.8",
+        "phpunit/phpunit": "^9",
+        "squizlabs/php_codesniffer": "3.*"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    }
+}
