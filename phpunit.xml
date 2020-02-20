@@ -26,16 +26,13 @@
             target="./coverage"
             lowUpperBound="35"
             highLowerBound="70"/>
-        <!-- <log type="coverage-clover" target="/tmp/coverage.xml"/>
-        <log type="coverage-php" target="/tmp/coverage.serialized"/> -->
+        <log type="coverage-xml" target="./coverage/xml/"/>
+        <log type="coverage-clover" target="./coverage/xml/coverage.xml"/>
         <log type="coverage-text"
             target="php://stdout"
             showUncoveredFiles="true"/>
-        <!-- <log type="junit" target="/tmp/logfile.xml"/> -->
-        <!-- <log type="testdox-html" target="/tmp/testdox.html"/> -->
         <log type="testdox-text"
             target="php://stdout"
             showUncoveredFiles="true"/>
-        <!-- <log type="testdox-text" target="/tmp/testdox.txt"/> -->
     </logging>
 </phpunit>
