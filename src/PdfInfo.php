@@ -142,7 +142,7 @@ class PdfInfo
 
         preg_match_all($regex, $pdfInfoOutput, $matches);
 
-        foreach (get_object_vars($pdfInfoModel) as $key) {
+        foreach (array_keys(get_object_vars($pdfInfoModel)) as $key) {
             if (isset($matches[$key])) {
                 if ($key === 'Tagged' || $key === 'Encrypted' || $key === 'Optimized') {
                     $matches[$key][0] = $matches[$key][0] === 'yes' ? true : false;
