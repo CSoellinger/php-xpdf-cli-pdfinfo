@@ -27,7 +27,7 @@ PHP 7 or above and Composer is expected to be installed on your system.
 ## Installing
 
 ```
-composer require csoellinger/xpdf-cli-tools
+composer require csoellinger/xpdf-cli-pdfinfo
 ```
 
 ## Usage
