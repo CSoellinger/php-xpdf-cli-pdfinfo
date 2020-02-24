@@ -3,11 +3,22 @@
     "description": "A little PHP wrapper around the Xpdf cli tool: pdfinfo.",
     "type": "library",
     "keywords": [
-        "PHP",
-        "PDF",
-        "Info",
+        "php",
+        "pdf",
+        "info",
         "xpdf",
-        "pdfinfo"
+        "pdfinfo",
+        "producer",
+        "creation date",
+        "modification date",
+        "tagged",
+        "form",
+        "pages",
+        "encrypted",
+        "page size",
+        "file size",
+        "optimized",
+        "version"
     ],
     "license": "MIT",
     "scripts": {
@@ -36,7 +47,7 @@
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "2.*",
-        "phan/phan": "^2.4",
+        "phan/phan": "^2.5",
         "phpmd/phpmd": "^2.8",
         "phpunit/phpunit": "^9",
         "squizlabs/php_codesniffer": "3.*"
