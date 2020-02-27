@@ -37,6 +37,13 @@ class PdfInfoTest extends TestCase
     private $examplePdf = __DIR__ . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'test.pdf';
 
     /**
+     * @var string Path to example pdf
+     */
+    private $exampleProtectedPdf = __DIR__ . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'test-protected.pdf';
+
+    private $pdfPassword = 'Pass12345678';
+
+    /**
      * @var string Path to wrong example pdf
      */
     private $exampleWrongPdf = __DIR__ . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'test.png';
@@ -58,14 +65,14 @@ class PdfInfoTest extends TestCase
             'HeightPts' => 792,
             'Format' => 'letter',
             'RotatedDegrees' => 0,
-            'raw' => '612 x 792 pts (letter) (rotated 0 degrees)',
+            'raw' => 'Page size:      612 x 792 pts (letter) (rotated 0 degrees)',
         ],
         'FileSize' => [
             'Bytes' => 9146,
-            'raw' => '9146 bytes',
+            'raw' => 'File size:      9146 bytes',
         ],
         'Optimized' => true,
-        'PdfVersion' => '1.6',
+        'PDFVersion' => '1.6',
         'raw' => "Creator:        Acrobat Pro DC 20.6.20034\n" .
                  "Producer:       Acrobat Pro DC 20.6.20034\n" .
                  "CreationDate:   Mon Feb 17 17:16:36 2020\n" .
@@ -75,6 +82,11 @@ class PdfInfoTest extends TestCase
                  "Pages:          1\n" .
                  "Encrypted:      no\n" .
                  "Page size:      612 x 792 pts (letter) (rotated 0 degrees)\n" .
+                 "MediaBox:           0.00     0.00   612.00   792.00\n" .
+                 "CropBox:            0.00     0.00   612.00   792.00\n" .
+                 "BleedBox:           0.00     0.00   612.00   792.00\n" .
+                 "TrimBox:            0.00     0.00   612.00   792.00\n" .
+                 "ArtBox:             0.00     0.00   612.00   792.00\n" .
                  "File size:      9146 bytes\n" .
                  "Optimized:      yes\nPDF version:    1.6",
     ];
@@ -102,7 +114,7 @@ class PdfInfoTest extends TestCase
         $this->assertEquals($this->testData['Pages'], $info->Pages);
         $this->assertEquals($this->testData['Encrypted'], $info->Encrypted);
         $this->assertEquals($this->testData['Optimized'], $info->Optimized);
-        $this->assertEquals($this->testData['PdfVersion'], $info->PdfVersion);
+        $this->assertEquals($this->testData['PDFVersion'], $info->PDFVersion);
         $this->assertEquals($this->testData['raw'], $info->raw);
 
         if (isset($this->testData['PageSize'])) {
@@ -119,6 +131,69 @@ class PdfInfoTest extends TestCase
             $this->assertEquals($this->testData['FileSize']['Bytes'], $info->FileSize->Bytes);
             $this->assertEquals($this->testData['FileSize']['raw'], $info->FileSize->raw);
         }
+    }
+
+    /**
+     * Test pdf info with an existing protected file but with no password/user.
+     *
+     * @testdox Test pdf info with an existing protected file but with no password/user.
+     *
+     * @covers \XpdfCliTools\PdfInfo\PdfInfo
+     *
+     * @throws ProcessFailedException
+     */
+    public function testWithProtectedFile()
+    {
+        $this->expectException(ProcessFailedException::class);
+
+        $info = new PdfInfo();
+        $info->exec($this->exampleProtectedPdf, $this->pdfPassword);
+
+        $this->assertInstanceOf(PdfInfoModel::class, $info);
+
+        $this->assertEquals($this->testData['Creator'], $info->Creator);
+        $this->assertEquals($this->testData['Producer'], $info->Producer);
+        $this->assertEquals($this->testData['CreationDate'], $info->CreationDate);
+        $this->assertEquals($this->testData['ModDate'], $info->ModDate);
+        $this->assertEquals($this->testData['Tagged'], $info->Tagged);
+        $this->assertEquals($this->testData['Form'], $info->Form);
+        $this->assertEquals($this->testData['Pages'], $info->Pages);
+        $this->assertEquals($this->testData['Encrypted'], $info->Encrypted);
+        $this->assertEquals($this->testData['Optimized'], $info->Optimized);
+        $this->assertEquals($this->testData['PDFVersion'], $info->PDFVersion);
+        $this->assertEquals($this->testData['raw'], $info->raw);
+
+        if (isset($this->testData['PageSize'])) {
+            $this->assertInstanceOf(PdfInfoPageSizeModel::class, $info->PageSize);
+            $this->assertEquals($this->testData['PageSize']['WidthPts'], $info->PageSize->WidthPts);
+            $this->assertEquals($this->testData['PageSize']['HeightPts'], $info->PageSize->HeightPts);
+            $this->assertEquals($this->testData['PageSize']['Format'], $info->PageSize->Format);
+            $this->assertEquals($this->testData['PageSize']['RotatedDegrees'], $info->PageSize->RotatedDegrees);
+            $this->assertEquals($this->testData['PageSize']['raw'], $info->PageSize->raw);
+        }
+
+        if (isset($this->testData['FileSize'])) {
+            $this->assertInstanceOf(PdfInfoFileSizeModel::class, $info->FileSize);
+            $this->assertEquals($this->testData['FileSize']['Bytes'], $info->FileSize->Bytes);
+            $this->assertEquals($this->testData['FileSize']['raw'], $info->FileSize->raw);
+        }
+    }
+
+    /**
+     * Test pdf info with an existing protected file but with no password/user.
+     *
+     * @testdox Test pdf info with an existing protected file but with no password/user.
+     *
+     * @covers \XpdfCliTools\PdfInfo\PdfInfo
+     *
+     * @throws ProcessFailedException
+     */
+    public function testWithProtectedFileAndWrongPassword()
+    {
+        $this->expectException(ProcessFailedException::class);
+
+        $pdfInfo = new PdfInfo();
+        $pdfInfo->exec($this->exampleProtectedPdf);
     }
 
     /**
