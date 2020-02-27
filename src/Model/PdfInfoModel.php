@@ -79,7 +79,7 @@ class PdfInfoModel
     /**
      * @var string PDF version
      */
-    public $PdfVersion = '';
+    public $PDFVersion = '';
 
     /**
      * @var string Raw shell output

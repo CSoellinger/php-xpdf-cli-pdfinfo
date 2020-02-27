@@ -65,7 +65,7 @@ echo $info->FileSize->raw; // Raw shell output for file size
 
 echo $info->Encrypted; // Encrypted (true/false)
 echo $info->Optimized; // Optimized (true/false)
-echo $info->PdfVersion; // Version
+echo $info->PDFVersion; // Version
 echo $info->raw; // Raw shell output from pdfinfo
 
 // Get page size as millimeter:

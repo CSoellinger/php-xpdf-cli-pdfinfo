@@ -43,7 +43,7 @@ echo "</pre>";
  *             [raw] => 9146 bytes
  *         )
  *     [Optimized] => 1
- *     [PdfVersion] => 1.6
+ *     [PDFVersion] => 1.6
  *     [raw] => Creator:        Acrobat Pro DC 20.6.20034
  *              Producer:       Acrobat Pro DC 20.6.20034
  *              CreationDate:   Mon Feb 17 17:16:36 2020
