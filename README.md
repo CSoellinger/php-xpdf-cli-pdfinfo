@@ -128,6 +128,9 @@ Then open your browser at `http://localhost:8000/example.php`
 - [getOS](https://github.com/insign/get-os)
 - [Symfony Process](https://symfony.com/doc/current/components/process.html)
 
+## ToDo
+
+- Add different encrypted informations: *Encrypted: yes (print:yes copy:yes change:yes addNotes:yes)*
 
 ## License
 
