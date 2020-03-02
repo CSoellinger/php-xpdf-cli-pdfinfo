@@ -11,9 +11,10 @@ $pdfInfo = new PdfInfo();
 
 /** @var PdfInfoModel $info */
 $info = $pdfInfo->exec(__DIR__ . '/../tests/assets/test.pdf');
+// $info = $pdfInfo->exec(__DIR__ . '/../tests/assets/test.pdf', 'OwnerPassword', 'UserPassword');
 
 echo "<pre>";
-print_r($pdfInfo->exec(__DIR__ . '/../tests/assets/test.pdf'));
+print_r($info);
 echo "</pre>";
 
 /**
@@ -31,11 +32,51 @@ echo "</pre>";
  *     [Encrypted] =>
  *     [PageSize] => XpdfCliTools\PdfInfo\Model\PdfInfoPageSizeModel Object
  *         (
- *             [WidthPts] => 612
- *             [HeightPts] => 792
+ *             [Width] => 612
+ *             [Height] => 792
  *             [Format] => letter
  *             [RotatedDegrees] => 0
  *             [raw] => 612 x 792 pts (letter) (rotated 0 degrees)
+ *         )
+ *     [MediaBox] => XpdfCliTools\PdfInfo\Model\PdfInfoBoxModel Object
+ *         (
+ *             [X] => 0
+ *             [Y] => 0
+ *             [Width] => 612
+ *             [Height] => 792
+ *             [raw] => MediaBox:           0.00     0.00   612.00   792.00
+ *         )
+ *     [CropBox] => XpdfCliTools\PdfInfo\Model\PdfInfoBoxModel Object
+ *         (
+ *             [X] => 0
+ *             [Y] => 0
+ *             [Width] => 612
+ *             [Height] => 792
+ *             [raw] => CropBox:            0.00     0.00   612.00   792.00
+ *         )
+ *     [BleedBox] => XpdfCliTools\PdfInfo\Model\PdfInfoBoxModel Object
+ *         (
+ *             [X] => 0
+ *             [Y] => 0
+ *             [Width] => 612
+ *             [Height] => 792
+ *             [raw] => BleedBox:           0.00     0.00   612.00   792.00
+ *         )
+ *     [TrimBox] => XpdfCliTools\PdfInfo\Model\PdfInfoBoxModel Object
+ *         (
+ *             [X] => 0
+ *             [Y] => 0
+ *             [Width] => 612
+ *             [Height] => 792
+ *             [raw] => TrimBox:            0.00     0.00   612.00   792.00
+ *         )
+ *     [ArtBox] => XpdfCliTools\PdfInfo\Model\PdfInfoBoxModel Object
+ *         (
+ *             [X] => 0
+ *             [Y] => 0
+ *             [Width] => 612
+ *             [Height] => 792
+ *             [raw] => ArtBox:             0.00     0.00   612.00   792.00
  *         )
  *     [FileSize] => XpdfCliTools\PdfInfo\Model\PdfInfoFileSizeModel Object
  *         (

@@ -15,10 +15,18 @@ Fetching the following informations and make them easy accessible:
   - Height as points
   - Format
   - Rotated Degrees
+- Box (Media, Crop, Bleed, Trim, Art)
+  - X coordinate as points
+  - Y coordinate as points
+  - Width as points
+  - Height as points
 - File size
   - Bytes
 - Optimized
 - PDF version
+
+Note: If you have a password protected pdf file, and not setting the password
+param, you will get a process failed exception.
 
 ## Getting Started
 
@@ -45,6 +53,10 @@ $pdfInfo = new PdfInfo();
 /** @var PdfInfoModel $info */
 $info = $pdfInfo->exec('<Path-To-Pdf>.pdf');
 
+// If you have a passwort protected pdf file:
+// $info = $pdfInfo->exec('<Path-To-Pdf>.pdf', 'OwnerPassword');
+// $info = $pdfInfo->exec('<Path-To-Pdf>.pdf', null, 'UserPassword');
+
 // Access the pdf informations
 echo $info->Creator; // Creator
 echo $info->Producer; // Producer
@@ -54,11 +66,18 @@ echo $info->Tagged; // Tagged (true/false)
 echo $info->Form; // Form(s)
 echo $info->Pages; // Number of pages
 
-echo $info->PageSize->WidthPts; // Page width as points
-echo $info->PageSize->HeightPts; // Page height as points
+echo $info->PageSize->Width; // Page width as points
+echo $info->PageSize->Height; // Page height as points
 echo $info->PageSize->Format; // Page format (if found)
 echo $info->PageSize->RotatedDegrees; // Degrees if rotated
 echo $info->PageSize->raw; // Raw shell output for page size
+
+// Available boxes: MediaBox, CropBox, BleedBox, TrimBox, ArtBox
+echo $info->MediaBox->X; // X coordinate
+echo $info->MediaBox->Y; // Y coordinate
+echo $info->MediaBox->Width; // Box width as points
+echo $info->MediaBox->Height; // Box height as points
+echo $info->MediaBox->raw; // Raw shell output for box
 
 echo $info->FileSize->Bytes; // File size in bytes
 echo $info->FileSize->raw; // Raw shell output for file size
@@ -69,8 +88,8 @@ echo $info->PDFVersion; // Version
 echo $info->raw; // Raw shell output from pdfinfo
 
 // Get page size as millimeter:
-echo $info->PageSize->WidthPts / PdfInfo::MM_TO_PTS; // = Convert points to millimeter
-echo $info->PageSize->HeightPts / PdfInfo::MM_TO_PTS; // = Convert points to millimeter
+echo $info->PageSize->Width / PdfInfo::MM_TO_PTS; // = Convert points to millimeter
+echo $info->PageSize->Height / PdfInfo::MM_TO_PTS; // = Convert points to millimeter
 ```
 
 ## Example

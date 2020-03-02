@@ -20,6 +20,7 @@ use Exception;
 use insign\getOS;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
+use XpdfCliTools\PdfInfo\Model\PdfInfoBoxModel;
 use XpdfCliTools\PdfInfo\Model\PdfInfoFileSizeModel;
 use XpdfCliTools\PdfInfo\Model\PdfInfoModel;
 use XpdfCliTools\PdfInfo\Model\PdfInfoPageSizeModel;
@@ -103,22 +104,25 @@ class PdfInfo
      * @throws Exception
      * @throws ProcessFailedException
      */
-    public function exec(string $file = '', string $ownerPassword = '', string $userPassword = ''): PdfInfoModel
+    public function exec(string $file = '', string $ownerPassword = null, string $userPassword = null): PdfInfoModel
     {
         // If pdf not exists throw an exception
         if (file_exists($file) === false) {
             throw new Exception('Pdf file not found: ' . $file, 1);
         }
 
-        $command = [$this->binPath];
+        $command = [];
+        $command[] = $this->binPath;
         $command[] = '-box';
 
         if (is_string($ownerPassword) && $ownerPassword !== '') {
-            $command[] = '-opw "' . $ownerPassword . '"';
+            $command[] = '-opw';
+            $command[] = $ownerPassword;
         }
 
         if (is_string($userPassword) && $userPassword !== '') {
-            $command[] = '-upw "' . $userPassword . '"';
+            $command[] = '-upw';
+            $command[] = $userPassword;
         }
 
         $command[] = $file;
@@ -126,7 +130,7 @@ class PdfInfo
         $process = new Process($command);
         $process->run();
 
-        // On execution error we also throe an exception
+        // On execution error we also throw an exception
         if (!$process->isSuccessful()) {
             throw new ProcessFailedException($process);
         }
@@ -179,12 +183,12 @@ class PdfInfo
 
         // Page size
         $match = [];
-        $regex = '/^Page size:\s*(?\'WidthPts\'[\d\.\,]*) x (?\'HeightPts\'[\d\.\,]*)( pts \((?\'Format\'[\w]*)\))?( \(rotated (?\'RotatedDegrees\'[\d\.\,\-]*) degrees\))?$/m';
+        $regex = '/^Page size:\s*(?\'Width\'[\d\.\,]*) x (?\'Height\'[\d\.\,]*)( pts \((?\'Format\'[\w]*)\))?( \(rotated (?\'RotatedDegrees\'[\d\.\,\-]*) degrees\))?$/m';
         preg_match_all($regex, $pdfInfoOutput, $match);
 
         $pdfInfoModel->PageSize = new PdfInfoPageSizeModel();
-        $pdfInfoModel->PageSize->WidthPts = (int) $match['WidthPts'][0];
-        $pdfInfoModel->PageSize->HeightPts = (int) $match['HeightPts'][0];
+        $pdfInfoModel->PageSize->Width = (float) $match['Width'][0];
+        $pdfInfoModel->PageSize->Height = (float) $match['Height'][0];
         $pdfInfoModel->PageSize->Format = $match['Format'][0];
         $pdfInfoModel->PageSize->RotatedDegrees = (int) $match['RotatedDegrees'][0];
         $pdfInfoModel->PageSize->raw = $match[0][0];
@@ -196,6 +200,19 @@ class PdfInfo
         $pdfInfoModel->FileSize = new PdfInfoFileSizeModel();
         $pdfInfoModel->FileSize->raw = $match[0][0];
         $pdfInfoModel->FileSize->Bytes = (int) trim(str_replace(['bytes', 'byte'], '', $match[1][0]));
+
+        foreach(['MediaBox', 'CropBox', 'BleedBox', 'TrimBox', 'ArtBox'] as $box) {
+            $match = [];
+            $regex = '/^' . $box . ':\s*([\d,\.\-]*)\s*([\d,\.\-]*)\s*([\d,\.\-]*)\s*([\d,\.\-]*)$/m';
+            preg_match_all($regex, $pdfInfoOutput, $match);
+
+            $pdfInfoModel->$box = new PdfInfoBoxModel();
+            $pdfInfoModel->$box->raw = $match[0][0];
+            $pdfInfoModel->$box->X = (float) $match[1][0];
+            $pdfInfoModel->$box->Y = (float) $match[2][0];
+            $pdfInfoModel->$box->Width = (float) $match[3][0];
+            $pdfInfoModel->$box->Height = (float) $match[4][0];
+        }
 
         return $pdfInfoModel;
     }
