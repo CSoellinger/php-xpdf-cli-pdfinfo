@@ -17,29 +17,29 @@ declare(strict_types=1);
 namespace XpdfCliTools\PdfInfo\Model;
 
 /**
- * Undocumented class
+ * PDF info box model
  */
-class PdfInfoPageSizeModel
+class PdfInfoBoxModel
 {
     /**
-     * @var float PDF width as PTS
+     * @var int X coordinate in pts
      */
-    public $Width = 0.0;
+    public $X = 0;
 
     /**
-     * @var float PDF height as PTS
+     * @var int Y coordinate in pts
      */
-    public $Height = 0.0;
+    public $Y = 0;
 
     /**
-     * @var string Possible PDF format
+     * @var int Width in PTS
      */
-    public $Format = '';
+    public $Width = 0;
 
     /**
-     * @var float Rotated degrees
+     * @var int Height in PTS
      */
-    public $RotatedDegrees = 0.0;
+    public $Height = 0;
 
     /**
      * @var string Raw shell output
@@ -47,8 +47,6 @@ class PdfInfoPageSizeModel
     public $raw = '';
 
     /**
-     * Convert the pdf info model into a string.
-     *
      * @return string
      */
     public function __toString()

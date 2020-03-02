@@ -20,6 +20,7 @@ use Exception;
 use insign\getOS;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
+use XpdfCliTools\PdfInfo\Model\PdfInfoBoxModel;
 use XpdfCliTools\PdfInfo\Model\PdfInfoFileSizeModel;
 use XpdfCliTools\PdfInfo\Model\PdfInfoModel;
 use XpdfCliTools\PdfInfo\Model\PdfInfoPageSizeModel;
@@ -96,96 +97,121 @@ class PdfInfo
     /**
      * Execute pdf info and fetch informations.
      *
-     * @param string $file PDF file to read.
+     * @param string $file          PDF file to read.
+     * @param string $ownerPassword PDF owner password.
+     * @param string $userPassword  PDF user password.
      *
      * @throws Exception
      * @throws ProcessFailedException
      */
-    public function exec(string $file = ''): PdfInfoModel
+    public function exec(string $file = '', string $ownerPassword = null, string $userPassword = null): PdfInfoModel
     {
         // If pdf not exists throw an exception
         if (file_exists($file) === false) {
             throw new Exception('Pdf file not found: ' . $file, 1);
         }
 
-        $process = new Process([$this->binPath, $file]);
+        $command = [];
+        $command[] = $this->binPath;
+        $command[] = '-box';
+
+        if (is_string($ownerPassword) && $ownerPassword !== '') {
+            $command[] = '-opw';
+            $command[] = $ownerPassword;
+        }
+
+        if (is_string($userPassword) && $userPassword !== '') {
+            $command[] = '-upw';
+            $command[] = $userPassword;
+        }
+
+        $command[] = $file;
+
+        $process = new Process($command);
         $process->run();
 
-        // On execution error we also throe an exception
+        // On execution error we also throw an exception
         if (!$process->isSuccessful()) {
             throw new ProcessFailedException($process);
         }
 
         $pdfInfoOutput = trim($process->getOutput());
-        $pdfInfoModel = new PdfInfoModel();
 
+        $pdfInfoModel = new PdfInfoModel();
         $pdfInfoModel->raw = $pdfInfoOutput;
 
-        // Regex to fetch all informations
-        $regex = '';
-        $regex .= '/';
-        $regex .= '(Creator:\s*(?\'Creator\'(.*))\n?)?';
-        $regex .= '(Producer:\s*(?\'Producer\'(.*))\n?)?';
-        $regex .= '(CreationDate:\s*(?\'CreationDate\'(.*))\n?)?';
-        $regex .= '(ModDate:\s*(?\'ModDate\'(.*))\n?)?';
-        $regex .= '(Tagged:\s*(?\'Tagged\'(no|yes))\n?)?';
-        $regex .= '(Form:\s*(?\'Form\'(.*))\n?)?';
-        $regex .= '(Pages:\s*(?\'Pages\'(\d*))\n?)?';
-        $regex .= '(Encrypted:\s*(?\'Encrypted\'(no|yes))\n?)?';
-        $regex .= '(Page size:\s*(?\'PageSize\'(.*))\n?)?';
-        $regex .= '(File size:\s*(?\'FileSize\'(.*))\n?)?';
-        $regex .= '(Optimized:\s*(?\'Optimized\'(no|yes))\n?)?';
-        $regex .= '(PDF version:\s*(?\'PdfVersion\'(.*))\n?)?';
-        $regex .= '/';
+        $positions = [
+            'Creator',
+            'Producer',
+            'CreationDate',
+            'ModDate',
+            'Tagged',
+            'Form',
+            'Pages',
+            'Encrypted',
+            'Optimized',
+            'PDF version',
+        ];
 
-        $matches = [];
+        foreach($positions as $pos) {
+            $objectName = preg_replace('/\s*/', '', ucwords($pos));
 
-        preg_match_all($regex, $pdfInfoOutput, $matches);
+            $match = [];
 
-        foreach (array_keys(get_object_vars($pdfInfoModel)) as $key) {
-            if (isset($matches[$key])) {
-                if ($key === 'Tagged' || $key === 'Encrypted' || $key === 'Optimized') {
-                    $matches[$key][0] = $matches[$key][0] === 'yes' ? true : false;
-                }
+            $regexGroup = '(.*)';
 
-                if ($key === 'Pages') {
-                    $matches[$key][0] = (int) $matches[$key][0];
-                }
-
-                // For page size we have another model called PdfInfoPageSizeModel
-                if ($key === 'PageSize') {
-                    $matchesPageSize = [];
-
-                    $regexPageSize = '';
-                    $regexPageSize .= '/';
-                    $regexPageSize .= '(?\'WidthPts\'[\d\.\,]*) x (?\'HeightPts\'[\d\.\,]*)';
-                    $regexPageSize .= '( pts \((?\'Format\'[\w]*)\))?';
-                    $regexPageSize .= '( \(rotated (?\'RotatedDegrees\'[\d\.\,\-]*) degrees\))?';
-                    $regexPageSize .= '/';
-
-                    preg_match_all($regexPageSize, (string) $matches[$key][0], $matchesPageSize);
-
-                    $pageSize = new PdfInfoPageSizeModel();
-                    foreach (['WidthPts', 'HeightPts', 'RotatedDegrees'] as $subKey) {
-                        $pageSize->$subKey = isset($matchesPageSize[$subKey]) ? (float) $matchesPageSize[$subKey][0] : 0;
-                    }
-                    $pageSize->Format = isset($matchesPageSize['Format']) ? $matchesPageSize['Format'][0] : '';
-                    $pageSize->raw = (string) $matches[$key][0];
-
-                    $matches[$key][0] = $pageSize;
-                }
-
-                // For file size we have another model called PdfInfoFileSizeModel
-                if ($key === 'FileSize') {
-                    $fileSize = new PdfInfoFileSizeModel();
-                    $fileSize->raw = (string) $matches[$key][0];
-                    $fileSize->Bytes = (int) trim(str_replace(['byte', 'bytes'], '', (string) $matches[$key][0]));
-
-                    $matches[$key][0] = $fileSize;
-                }
-
-                $pdfInfoModel->$key = $matches[$key][0];
+            if (in_array($pos, ['Pages'])) {
+                $regexGroup = '(\d*)';
             }
+
+            if (in_array($pos, ['Tagged', 'Encrypted', 'Optimized'])) {
+                $regexGroup = '(no|yes)';
+            }
+
+            $regex = '/^' . $pos . ':\s*' . $regexGroup . '$/m';
+
+            preg_match_all($regex, $pdfInfoOutput, $match);
+
+            if (property_exists($pdfInfoModel, $objectName) && count($match[1]) > 0) {
+                if (in_array($pos, ['Tagged', 'Encrypted', 'Optimized'])) {
+                    $match[1][0] = $match[1][0] === 'yes' ? true : false;
+                }
+
+                $pdfInfoModel->$objectName = $match[1][0];
+            }
+        }
+
+        // Page size
+        $match = [];
+        $regex = '/^Page size:\s*(?\'Width\'[\d\.\,]*) x (?\'Height\'[\d\.\,]*)( pts \((?\'Format\'[\w]*)\))?( \(rotated (?\'RotatedDegrees\'[\d\.\,\-]*) degrees\))?$/m';
+        preg_match_all($regex, $pdfInfoOutput, $match);
+
+        $pdfInfoModel->PageSize = new PdfInfoPageSizeModel();
+        $pdfInfoModel->PageSize->Width = (float) $match['Width'][0];
+        $pdfInfoModel->PageSize->Height = (float) $match['Height'][0];
+        $pdfInfoModel->PageSize->Format = $match['Format'][0];
+        $pdfInfoModel->PageSize->RotatedDegrees = (int) $match['RotatedDegrees'][0];
+        $pdfInfoModel->PageSize->raw = $match[0][0];
+
+        $match = [];
+        $regex = '/^File size:\s*(.*)$/m';
+        preg_match_all($regex, $pdfInfoOutput, $match);
+
+        $pdfInfoModel->FileSize = new PdfInfoFileSizeModel();
+        $pdfInfoModel->FileSize->raw = $match[0][0];
+        $pdfInfoModel->FileSize->Bytes = (int) trim(str_replace(['bytes', 'byte'], '', $match[1][0]));
+
+        foreach(['MediaBox', 'CropBox', 'BleedBox', 'TrimBox', 'ArtBox'] as $box) {
+            $match = [];
+            $regex = '/^' . $box . ':\s*([\d,\.\-]*)\s*([\d,\.\-]*)\s*([\d,\.\-]*)\s*([\d,\.\-]*)$/m';
+            preg_match_all($regex, $pdfInfoOutput, $match);
+
+            $pdfInfoModel->$box = new PdfInfoBoxModel();
+            $pdfInfoModel->$box->raw = $match[0][0];
+            $pdfInfoModel->$box->X = (float) $match[1][0];
+            $pdfInfoModel->$box->Y = (float) $match[2][0];
+            $pdfInfoModel->$box->Width = (float) $match[3][0];
+            $pdfInfoModel->$box->Height = (float) $match[4][0];
         }
 
         return $pdfInfoModel;

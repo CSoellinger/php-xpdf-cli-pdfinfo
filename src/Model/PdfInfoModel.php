@@ -67,6 +67,31 @@ class PdfInfoModel
     public $PageSize;
 
     /**
+     * @var PdfInfoBoxModel Media box
+     */
+    public $MediaBox;
+
+    /**
+     * @var PdfInfoBoxModel Crop box
+     */
+    public $CropBox;
+
+    /**
+     * @var PdfInfoBoxModel Bleed box
+     */
+    public $BleedBox;
+
+    /**
+     * @var PdfInfoBoxModel Trim box
+     */
+    public $TrimBox;
+
+    /**
+     * @var PdfInfoBoxModel Art box
+     */
+    public $ArtBox;
+
+    /**
      * @var PdfInfoFileSizeModel PDF file size
      */
     public $FileSize;
@@ -79,7 +104,7 @@ class PdfInfoModel
     /**
      * @var string PDF version
      */
-    public $PdfVersion = '';
+    public $PDFVersion = '';
 
     /**
      * @var string Raw shell output
