@@ -183,7 +183,7 @@ class PdfInfo
 
         // Page size
         $match = [];
-        $regex = '/^Page size:\s*(?\'Width\'[\d\.\,]*) x (?\'Height\'[\d\.\,]*)( pts \((?\'Format\'[\w]*)\))?( \(rotated (?\'RotatedDegrees\'[\d\.\,\-]*) degrees\))?$/m';
+        $regex = "/^Page size:\s*(?'Width'[\d\.\,]*) x (?'Height'[\d\.\,]*) pts( \((?'Format'[\w]*)\))?( \(rotated (?'RotatedDegrees'[\d\.\,\-]*) degrees\))?$/m";
         preg_match_all($regex, $pdfInfoOutput, $match);
 
         $pdfInfoModel->PageSize = new PdfInfoPageSizeModel();
